@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <title>Crime Rate Analysis(social)</title>
+	<!-- jQuery UI CSS -->
+	<link rel="stylesheet" href="css/jquery-ui.min.css">
+	<link rel="stylesheet" href="css/jquery-ui.structure.min.css">
+	<link rel="stylesheet" href="css/jquery-ui.theme.min.css">
+	<!-- D3 Tooltip CSS -->
+	<link rel="stylesheet" href="css/d3-tip.css">
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	<div id="main"> 
+		<div id="header">
+			<div id="title_background">
+				<div id="title_text">
+					<h1><b>Analysis of State Crime Rates in U.S. </b></h1>
+				</div><!--title_text-->
+			</div><!--title_background-->
+			<div id="tab_bar">
+				<ul id="tab">
+					<li><a href="index.html"><b>Home</b></a></li>
+					<li><a href="demographic.html"><b>Geographic</b></a></li>
+					<li><a href="economic.html"><b>Economic</b></a></li>
+					<li class="selected"><a href="social.html"><b>Social</b></a></li>
+					<li><a href="about.html"><b>About</b></a></li>
+				</ul><!--tab-->
+			</div><!--tab_bar-->
+		</div><!--header-->
+		<div id="side_menu">
+			<div id="content">
+				<br />
+				<br />
+				<p>
+				<i>The following bubble chart tells a relationship between crime rates and 
+					<b>education scores</b> in each state. The eduction score is composed by many 
+					educational criterias(High-school diploma holders, bachelor diploma holders, 
+					highest average university quality, so on). The majority of states forms 
+					a trend that states with higher education score have lower crime rates.
+				</i>
+				</p>
+				<br />
+				<div class="row">
+					<div class="col-md-12">
+						<div id="eduChart">
+							</div> 
+					</div>
+				</div>
+			</div><!--content-->
+		</div><!--side_menu-->
+		<div id="page_footer">
+			<div id="footer">
+				&copy; <script>var d=new Date(); document.write(d.getFullYear());</script>
+				| <a>HTML5</a> | <a>CSS</a> | <a href="mailto:mzhou@gwu.edu">Mo Zhou</a>
+			</div><!--footer-->
+		</div><!--page_footer-->
+	</div><!--main-->
+	
+	<!-- Load d3.js -->
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/d3.min.js"></script>
+	<script src="js/d3-tip.js"></script>
+	<script src="http://d3js.org/d3.v4.js"></script>
+	<!-- Load color scale -->
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<!-- Custom JS -->
+	<script src="js/main.js"></script>
+</body>
+</html>

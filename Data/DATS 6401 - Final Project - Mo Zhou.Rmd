@@ -1,0 +1,219 @@
+---
+title: "DATS 6401 - Final Project - Mo Zhou"
+author: "Mo Zhou"
+date: "4/18/2019"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(plyr) 
+library(openintro)
+library(reshape2)
+state_crime_rate <- read_csv("Data/cleaned data/state_crime_rate_clean.csv")
+```
+
+```{r}
+#select variables & rename variables
+my_data = subset(state_crime_rate, select = -c(1,2,5,11))
+my_data <- rename(my_data,c('Agency Jurisdiction - Split 1'='City', 
+                            'Agency Jurisdiction - Split 2'='State',
+                            'Assaults Percapita'='Assaults_percapita',
+                            'Crimes Percapita'='Crimes_percapita',
+                            'Homicides Percapita'='Homicides_Percapita',
+                            'Rapes Percapita'='Rapes_percapita',
+                            'Report Year'='Report_year',
+                            'Robberies Percapita'='Robberies_percapita',
+                            'Violent Crimes'='Violent_crimes'))
+
+my_data$State=abbr2state(my_data$State)
+```
+
+```{r}
+#get each state data
+state_data = subset(my_data, select = -c(1))
+state_data = aggregate(. ~ State + Report_year, data=state_data, FUN=sum)
+state_new = state_data %>% 
+  mutate(total_crime_rate = Violent_crimes/Population,
+         assault_rate = Assaults/Population,
+         rape_rate = Rapes/Population,
+         robbery_rate = Robberies/Population,
+         homicide_rate = Homicides/Population)
+#write.csv(state_new, "state_data.csv")
+
+state_data = aggregate(. ~ State, data=state_data, FUN=sum)
+state_geomap_data = subset(state_data, select = -c(2))
+state_geomap_data = state_geomap_data %>% 
+  mutate(total_crime_rate = Violent_crimes/Population,
+         assault_rate = Assaults/Population,
+         rape_rate = Rapes/Population,
+         robbery_rate = Robberies/Population,
+         homicide_rate = Homicides/Population)
+#write.csv(state_geomap_data, "state_geomap_data.csv")
+```
+
+```{r}
+# education tab
+education <- read_csv("education_score_state.csv")
+education = rename(education, c('state'='State', 'total_score'='education_score'))
+  
+# get state data for 2015
+crime_rate2015 = state_new %>% 
+  filter(Report_year==2015) 
+
+crime_vs_education <- merge(education, crime_rate2015,by="State")
+
+crime_vs_education = crime_vs_education %>% 
+  select(1, 3, 4, 10, 16, 17, 18, 19, 20 )
+
+#write.csv(crime_vs_education, "education_tab.csv")
+```
+
+
+```{r}
+# get U.S. data
+my_data$Report_year = as.character(my_data$Report_year)
+us_data = filter(my_data, City == "United States")
+us_data = subset(us_data, select = -c(2,3,4,8,9,10,12,13))
+
+us_population_data = aggregate(my_data[["Population"]], by=my_data["Report_year"], sum, na.rm=T)
+us_population_data <- rename(us_population_data,c('x'='population'))
+
+us_assault_data = aggregate(my_data[["Assaults"]], by=my_data["Report_year"], sum, na.rm=T)
+us_assault_data <- rename(us_assault_data,c('x'='Assaults'))
+
+us_assaultper_data = aggregate(my_data[["Assaults_percapita"]], by=my_data["Report_year"], sum, na.rm=T)
+us_assaultper_data <- rename(us_assaultper_data,c('x'='Assaults_percapita'))
+
+us_rapes_data = aggregate(my_data[["Rapes"]], by=my_data["Report_year"], sum, na.rm=T)
+us_rapes_data <- rename(us_rapes_data,c('x'='Rapes'))
+
+us_rapesper_data = aggregate(my_data[["Rapes_percapita"]], by=my_data["Report_year"], sum, na.rm=T)
+us_rapesper_data <- rename(us_rapesper_data,c('x'='Rapes_percapita'))
+
+us_robberies_data = aggregate(my_data[["Robberies"]], by=my_data["Report_year"], sum, na.rm=T)
+us_robberies_data <- rename(us_robberies_data,c('x'='Robberies'))
+
+us_robberiesper_data = aggregate(my_data[["Robberies_percapita"]], by=my_data["Report_year"], sum, na.rm=T)
+us_robberiesper_data <- rename(us_robberiesper_data,c('x'='Robberies_percapita'))
+
+us_new = merge(us_population_data, us_assault_data, by='Report_year')
+us_new = merge(us_new, us_assaultper_data, by='Report_year')
+us_new = merge(us_new, us_rapes_data, by='Report_year')
+us_new = merge(us_new, us_rapesper_data, by='Report_year')
+us_new = merge(us_new, us_robberies_data, by='Report_year')
+us_new = merge(us_new, us_robberiesper_data, by='Report_year')
+us_new = merge(us_new, us_data, by='Report_year')
+us_new = us_new %>% 
+  mutate(total_crime_rate = Violent_crimes/population,
+         assault_rate = Assaults/population,
+         rape_rate = Rapes/population,
+         robbery_rate = Robberies/population,
+         homicide_rate = Homicides/population)
+#write.csv(us_new, "us_data.csv")
+
+#get us average data
+us_new = subset(us_new, select = -c(1, 4, 6,8,10,12,14,15,16,17,18)) 
+us_new = aggregate(. ~ City, data=us_new, FUN=sum)
+us_average = us_new %>% 
+  mutate(total_crime_rate = Violent_crimes/population,
+         assault_rate = Assaults/population,
+         rape_rate = Rapes/population,
+         robbery_rate = Robberies/population,
+         homicide_rate = Homicides/population)
+#write.csv(us_average, "us_average.csv")
+```
+
+```{r}
+#GDP vs. crime rates
+gdp <- read_csv("Data/Raw data/state_gdp.csv")
+
+gdp <- rename(gdp,c('2011__Total Gross State Product'='2011', 
+                    '2012__Total Gross State Product'='2012',
+                    '2013__Total Gross State Product'='2013',
+                    '2014__Total Gross State Product'='2014',
+                    '2015__Total Gross State Product'='2015',
+                    '2016__Total Gross State Product'='2016',
+                    '2017__Total Gross State Product'='2017'))
+#reshape the dataset
+gdp_new = melt(gdp, id.vars=c("Location"))
+gdp_new <- rename(gdp_new,c('Location'='State',
+                            'variable'='Report_year',
+                            'value'='gdp'))
+
+crime_rate2011_2017 = state_new %>% filter(Report_year %in% c(2011,2012,2013,2014,2015,2016,2017))
+
+crime_vs_gdp <- merge(gdp_new, crime_rate2011_2017,by=c("State","Report_year"))
+
+#write.csv(crime_vs_gdp, "crime_vs_gdp.csv")
+
+
+#GDP percapita vs. crime rates(1997-2015)
+gdp_percapita <- read_csv("Data/Raw data/state gdp per capita.csv")
+
+gdp_percapita <- rename(gdp_percapita,c('X1'='State'))
+gdp_percapita_new = melt(gdp_percapita, id.vars=c("State"))
+gdp_percapita_new <- rename(gdp_percapita_new,c('variable'='Report_year',
+                                                'value'='gdp_percapita'))
+
+crime_rate1997_2015 = state_new %>% filter(Report_year %in% c(1997, 1998, 1999, 2000, 
+                                                              2001, 2002, 2003, 2004,
+                                                              2005, 2006, 2007, 2008, 
+                                                              2009, 2010, 2011, 2012,
+                                                              2013, 2014,2015))
+
+crime_vs_gdp_percapita <- merge(gdp_percapita_new, crime_rate1997_2015,by=c("State","Report_year"))
+
+#write.csv(crime_vs_gdp_percapita, "crime_vs_gdp_percapita.csv")
+```
+```{r}
+#unemployment rate vs. crime rates
+unemployment_rate <- read_csv("Data/Raw data/state_unemployment_rate.csv")
+unemployment_rate = subset(unemployment_rate, select = -c(1)) 
+
+#reshape the dataset
+unemployment_rate = melt(unemployment_rate, id.vars=c("Area"))
+unemployment_rate <- rename(unemployment_rate,c('Area'='State',
+                                                'variable'='Report_year',
+                                                'value'='unemployment_rate'))
+ 
+crime_rate1980_2015 = state_new %>% filter(Report_year %in% c(1980, 1981, 1982, 1983, 
+                                                              1984, 1985, 1986, 1987,
+                                                              1988, 1989, 1990, 1991,
+                                                              1992, 1993, 1994, 1995,
+                                                              1996, 1997, 1998, 1999,
+                                                              2000, 2001, 2002, 2003,
+                                                              2004, 2005, 2006, 2007,
+                                                              2008, 2009, 2010, 2011,
+                                                              2012, 2013, 2014, 2015))
+                                                            
+
+crime_vs_unemployment <- merge(unemployment_rate, crime_rate1980_2015,by=c("State","Report_year"))
+
+#write.csv(crime_vs_unemployment, "crime_vs_unemployment.csv")
+```
+
+```{r}
+#average income/minimun wage vs. crime rates
+income_mw <- read_csv("Data/Raw data/VZ_state_annual.csv")
+income_mw = subset(income_mw, select = -c(1, 3, 5, 7, 9,10)) 
+
+#reshape the dataset
+income_mw <- rename(income_mw,c('Name'='State',
+                                'Year'='Report_year'))
+                                                          
+crime_vs_income_mw <- merge(income_mw, state_new, by=c("State","Report_year"))
+
+#write.csv(crime_vs_income_mw, "crime_vs_income_mw.csv")
+```
+
+```{r}
+#get eco tab data
+eco_tab = merge(crime_vs_income_mw, crime_vs_unemployment, by=c("State","Report_year"), all=TRUE)
+eco_tab <- merge(eco_tab, crime_vs_gdp_percapita, by=c("State","Report_year"), all=TRUE)
+eco_tab_data = subset(eco_tab, select = c(1,2,3,4,10,16,17,18,19,20,21,38))
+
+#write.csv(eco_tab_data, "eco_tab_data.csv")
+```
+
