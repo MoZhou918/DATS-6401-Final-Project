@@ -1,0 +1,3 @@
+# DATS-6401-Final-Project
+Data Visualization Final Project 
+The objective of this project is to use visualization methods to find out what factors may have relationships with or influence crime rates over time. I used three datasets from Kaggle, which are state crime rates from 1975 to 2015, Gross State Products dataset from 2011 to 2017, and state unemployment rates dataset from 1990 to 2015. Inside the crime rates dataset, which is the main dataset for my project, there are 15 variables, reported year, reported month, state, population, numbers of different types of crimes, and per capita of each type of crime.
